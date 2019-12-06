@@ -1,3 +1,6 @@
 [submodule "TableView"]
 	path = TableView
 	url = https://github.com/tgnivekucn/IOSComponent
+[submodule "CollectionView"]
+	path = CollectionView
+	url = https://github.com/tgnivekucn/IOSComponent
