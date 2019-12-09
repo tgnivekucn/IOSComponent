@@ -22,7 +22,7 @@ class CustomTableViewCell: UITableViewCell {
         // Initialization code
         mCollectionView.dataSource = self
         mCollectionView.delegate = self
-        mCollectionView.dropDelegate = self
+//        mCollectionView.dropDelegate = self
         //        mCollectionView.canCancelContentTouches = false
         //        mCollectionView.delaysContentTouches = false
         //        mCollectionView.alwaysBounceVertical = false
