@@ -9,9 +9,13 @@
 import UIKit
 protocol ComminicationBetweenCellAndTableView: class {
     //moveItem內須實作 getRowNumByCollectionViewTagOrObject(),來區分是否cell有移動到別的列
-    func moveItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, srcRowNum: Int)
-    func isInTableView(v: UICollectionView, session: UIDropSession, dstIndexPath: IndexPath?) -> Bool
-    func isInSameCollectionView(v: UICollectionView, session: UIDropSession, dstIndexPath: IndexPath?) -> Bool
+    func moveItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, srcRowNum: Int, dstCollectionView: UICollectionView)
+    
+    
+    func reorderItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, rowNum: Int)
+    func isInTableView(v: UICollectionView, session: UIDropSession, dstIndexPath: IndexPath?) -> Bool     //暫時不使用
+    func getItem(rowNum: Int, index: Int) -> Int //get item by tableView row num & index
+    func getDataArrCount(rowNum: Int) -> Int
 }
 class EmbeddedCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var mLabel: UILabel!
@@ -20,7 +24,7 @@ class CustomTableViewCell: UITableViewCell {
     
     @IBOutlet weak var mCollectionView: UICollectionView!
     
-    var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
+//    var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     weak var delegate: ComminicationBetweenCellAndTableView? = nil
     var rowNum = 0 //for identifying the item is in the same collectionView or not after drag/drop
     override func awakeFromNib() {
@@ -65,13 +69,16 @@ class CustomTableViewCell: UITableViewCell {
         //note: 參數的collectionView是dst collectionView
         collectionView.performBatchUpdates({
             var indexPaths = [IndexPath]()
-            for (index, item) in coordinator.items.enumerated()
-            {
-                let indexPath = IndexPath(row: destinationIndexPath.row + index, section: destinationIndexPath.section)
-                
+            for (index, item) in coordinator.items.enumerated() {
                 if let sourceIndexPath = item.sourceIndexPath {
-                    delegate?.moveItem(item: item.dragItem.localObject as! Int, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum)
-                    //moveItem內須實作 getRowNumByCollectionViewTagOrObject(),來區分是否cell有移動到別的列
+                    print("sourceIndexPath.section is: \(sourceIndexPath.section), row is: \(sourceIndexPath.row)")
+                }
+                print("destinationIndexPath.section is: \(destinationIndexPath.section), row is: \(destinationIndexPath.row), index is: \(index)")
+                
+                let indexPath = IndexPath(row: destinationIndexPath.row, section: destinationIndexPath.section)
+                if let sourceIndexPath = item.sourceIndexPath {
+                    delegate?.moveItem(item: item.dragItem.localObject as! Int, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum, dstCollectionView: collectionView)
+                    collectionView.deleteItems(at: [sourceIndexPath])
                 }
                 indexPaths.append(indexPath)
             }
@@ -86,14 +93,19 @@ class CustomTableViewCell: UITableViewCell {
 
 extension CustomTableViewCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataArr.count
+        let dataArrCount: Int = delegate?.getDataArrCount(rowNum: rowNum) ?? 0
+        return dataArrCount
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "collectionViewCell1", for: indexPath)
         if let cell = cell as? EmbeddedCollectionViewCell {
-            if indexPath.row < dataArr.count {
-                cell.mLabel.text = "\(dataArr[indexPath.row])"
+            let dataArrCount = delegate?.getDataArrCount(rowNum: rowNum) ?? 0
+            if indexPath.row < dataArrCount {
+                let item: Int = delegate?.getItem(rowNum: rowNum, index: indexPath.row) ?? 0
+                print("refresh cellForItemAt rowNum: \(rowNum), index: \(indexPath.row), item: \(item)")
+
+                cell.mLabel.text = "\(item)"
                 if indexPath.row % 2 == 0 {
                     cell.backgroundColor = UIColor.gray
                 } else {
@@ -105,8 +117,9 @@ extension CustomTableViewCell: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let temp = dataArr.remove(at: sourceIndexPath.item)
-        dataArr.insert(temp, at: destinationIndexPath.item)
+        delegate?.reorderItem(item: sourceIndexPath.item, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, rowNum: rowNum)
+//        let temp = dataArr.remove(at: sourceIndexPath.item)
+//        dataArr.insert(temp, at: destinationIndexPath.item)
     }
     
     func numberOfSections(in collectionView: UICollectionView) -> Int {
@@ -128,8 +141,8 @@ extension CustomTableViewCell: UICollectionViewDelegate {
 
 extension CustomTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let item = dataArr[indexPath.row]
-        let itemProvider = NSItemProvider(object: String(item) as NSString)
+        let item = delegate?.getItem(rowNum: rowNum, index: indexPath.row)//        let item = dataArr[indexPath.row]
+        let itemProvider = NSItemProvider(object: String(item!) as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
         dragItem.localObject = item
         return [dragItem]
@@ -147,22 +160,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     
     //在手指移動的過程中,持續update之間的UI change by UICollectionViewDropProposal
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
-        print("dropSessionDidUpdate hasActiveDrag: \(collectionView.hasActiveDrag) // hasActiveDrop: \(collectionView.hasActiveDrop)")
-        //判斷 collectionView是否正在drag或drop,且是否dragItem目前的位置是否在同一個collectionView,來決定要回傳哪種operation
-        // 1) 同個row或不同row -> move
-        // 2) 在兩列之間 -> move
-        // 3) 超出tableView範圍 -> forbidden or cancel
-        #if DEBUG
-        /*
-        if let delegate = delegate {
-            if delegate.isInTableView(v: collectionView, session: session, dstIndexPath: destinationIndexPath) {
-                return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
-            } else {
-                return UICollectionViewDropProposal(operation: .forbidden)
-            }
-        }
-         */
-        #endif
+        //TODO 待確認是否需要check isInTableView
         return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
 
     }
@@ -184,7 +182,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
         }
         switch coordinator.proposal.operation {
         case .move:
-            print("performDropWith current action is: (2) copy, location is: \(coordinator.session.location(in: self))")
+//            print("performDropWith current action is: (2) copy, location is: \(coordinator.session.location(in: self))")
             self.copyItems(coordinator: coordinator, destinationIndexPath: destinationIndexPath, collectionView: collectionView)
             break
         default:
