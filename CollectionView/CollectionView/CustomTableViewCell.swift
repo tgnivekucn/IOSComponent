@@ -16,6 +16,7 @@ protocol ComminicationBetweenCellAndTableView: class {
     func isInTableView(v: UICollectionView, session: UIDropSession, dstIndexPath: IndexPath?) -> Bool     //暫時不使用
     func getItem(rowNum: Int, index: Int) -> Int //get item by tableView row num & index
     func getDataArrCount(rowNum: Int) -> Int
+    func getCollectionViewByTableViewRow(rowNum: Int) -> UICollectionView?
 }
 class EmbeddedCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var mLabel: UILabel!
@@ -78,7 +79,15 @@ class CustomTableViewCell: UITableViewCell {
                 let indexPath = IndexPath(row: destinationIndexPath.row, section: destinationIndexPath.section)
                 if let sourceIndexPath = item.sourceIndexPath {
                     delegate?.moveItem(item: item.dragItem.localObject as! Int, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum, dstCollectionView: collectionView)
-                    collectionView.deleteItems(at: [sourceIndexPath])
+                    
+                    
+                    //TODO
+                    //在這裡要區分deleteItems at sourceIndexPath的collectionView是srcCollectionView或是dstCollecctionView
+                    //note: 理論上應該要在DragDelegate的protocol function中,讓srcCollectionView去刪除sourceIndexPath
+                    //      然後在dstCollectionView中去新增destinationIndexPath
+                    if let srcCollectionView = delegate?.getCollectionViewByTableViewRow(rowNum: rowNum) {
+                        srcCollectionView.deleteItems(at: [sourceIndexPath])
+                    }
                 }
                 indexPaths.append(indexPath)
             }

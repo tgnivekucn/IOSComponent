@@ -181,6 +181,13 @@ extension ViewController: ComminicationBetweenCellAndTableView {
     }
     
     
+    func getCollectionViewByTableViewRow(rowNum: Int) -> UICollectionView? {
+        let indexPath = IndexPath(row: rowNum, section: 0)
+        if let cell = mTableView.cellForRow(at: indexPath), let customCell = cell as? CustomTableViewCell {
+            return customCell.mCollectionView
+        }
+        return nil
+    }
 }
 
 
