@@ -192,8 +192,9 @@ extension ViewController: ComminicationBetweenCellAndTableView {
     }
     
     func getCollectionViewName(v: UICollectionView) -> String {
-        let point = v.center
-        if let indexPath = mTableView.indexPathForRow(at: point) {
+        var p = v.convert(v.center, to: self.mTableView)
+
+        if let indexPath = mTableView.indexPathForRow(at: p) {
             return "CollectionView\(indexPath.row)"
         }
         return "CollectionView_NULL"

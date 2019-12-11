@@ -191,6 +191,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  performDropWith")
 
+        /*
         let destinationIndexPath: IndexPath
         if let indexPath = coordinator.destinationIndexPath  {
             destinationIndexPath = indexPath
@@ -208,6 +209,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
         default:
             return
         }
+        */
     }
 }
 
