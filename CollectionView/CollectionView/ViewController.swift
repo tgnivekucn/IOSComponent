@@ -115,7 +115,9 @@ extension ViewController: ComminicationBetweenCellAndTableView {
             }
             print(dataArr)
         } else {
-            print("不同個row reorder")
+            print("不同個row reorder: 刪除tableVIew第\(srcRowNum)列的第\(sourceIndexPath.row)個")
+            print("不同個row reorder: 新增tableVIew第\(dstRow)列的第\(destinationIndexPath.row)個")
+
             switch srcRowNum {
                 case 0:
                     dataArr.remove(at: sourceIndexPath.row)
@@ -187,6 +189,14 @@ extension ViewController: ComminicationBetweenCellAndTableView {
             return customCell.mCollectionView
         }
         return nil
+    }
+    
+    func getCollectionViewName(v: UICollectionView) -> String {
+        let point = v.center
+        if let indexPath = mTableView.indexPathForRow(at: point) {
+            return "CollectionView\(indexPath.row)"
+        }
+        return "CollectionView_NULL"
     }
 }
 

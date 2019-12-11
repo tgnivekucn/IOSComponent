@@ -17,6 +17,8 @@ protocol ComminicationBetweenCellAndTableView: class {
     func getItem(rowNum: Int, index: Int) -> Int //get item by tableView row num & index
     func getDataArrCount(rowNum: Int) -> Int
     func getCollectionViewByTableViewRow(rowNum: Int) -> UICollectionView?
+    func getCollectionViewName(v: UICollectionView) -> String
+
 }
 class EmbeddedCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var mLabel: UILabel!
@@ -71,24 +73,30 @@ class CustomTableViewCell: UITableViewCell {
         collectionView.performBatchUpdates({
             var indexPaths = [IndexPath]()
             for (index, item) in coordinator.items.enumerated() {
-                if let sourceIndexPath = item.sourceIndexPath {
-                    print("sourceIndexPath.section is: \(sourceIndexPath.section), row is: \(sourceIndexPath.row)")
-                }
-                print("destinationIndexPath.section is: \(destinationIndexPath.section), row is: \(destinationIndexPath.row), index is: \(index)")
+//                if let sourceIndexPath = item.sourceIndexPath {
+//                    print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem: sourceIndexPath.section is: \(sourceIndexPath.section), row is: \(sourceIndexPath.row)")
+//                }
                 
                 let indexPath = IndexPath(row: destinationIndexPath.row, section: destinationIndexPath.section)
-                if let sourceIndexPath = item.sourceIndexPath {
-                    delegate?.moveItem(item: item.dragItem.localObject as! Int, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum, dstCollectionView: collectionView)
-                    
-                    
-                    //TODO
-                    //在這裡要區分deleteItems at sourceIndexPath的collectionView是srcCollectionView或是dstCollecctionView
-                    //note: 理論上應該要在DragDelegate的protocol function中,讓srcCollectionView去刪除sourceIndexPath
-                    //      然後在dstCollectionView中去新增destinationIndexPath
-                    if let srcCollectionView = delegate?.getCollectionViewByTableViewRow(rowNum: rowNum) {
-                        srcCollectionView.deleteItems(at: [sourceIndexPath])
-                    }
+
+                let tmp: (data: Int,indexPath: IndexPath) = item.dragItem.localObject as! (data: Int, indexPath: IndexPath)
+                let srcindexPath = IndexPath(row: tmp.indexPath.row, section: tmp.indexPath.section)
+
+                print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")!  copyItem: destinationIndexPath.section is: \(destinationIndexPath.section), row is: \(destinationIndexPath.row), index is: \(index)")
+                print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem: sourceIndexPath.section is: \(srcindexPath.section), row is: \(srcindexPath.row)")
+                
+                delegate?.moveItem(item: tmp.data , sourceIndexPath: srcindexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum, dstCollectionView: collectionView)
+                
+                
+                //TODO
+                //在這裡要區分deleteItems at sourceIndexPath的collectionView是srcCollectionView或是dstCollecctionView
+                //note: 理論上應該要在DragDelegate的protocol function中,讓srcCollectionView去刪除sourceIndexPath
+                //      然後在dstCollectionView中去新增destinationIndexPath
+                if let srcCollectionView = delegate?.getCollectionViewByTableViewRow(rowNum: rowNum) {
+                    print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem:  srcCollectionView is: \(delegate?.getCollectionViewName(v: srcCollectionView) ?? "")")
+                    srcCollectionView.deleteItems(at: [srcindexPath])
                 }
+                
                 indexPaths.append(indexPath)
             }
             collectionView.insertItems(at: indexPaths)
@@ -103,6 +111,7 @@ class CustomTableViewCell: UITableViewCell {
 extension CustomTableViewCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
         let dataArrCount: Int = delegate?.getDataArrCount(rowNum: rowNum) ?? 0
+        print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  numberOfItems is: \(dataArrCount)")
         return dataArrCount
     }
     
@@ -153,7 +162,8 @@ extension CustomTableViewCell: UICollectionViewDragDelegate {
         let item = delegate?.getItem(rowNum: rowNum, index: indexPath.row)//        let item = dataArr[indexPath.row]
         let itemProvider = NSItemProvider(object: String(item!) as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
-        dragItem.localObject = item
+        let itemObj: (data: Int, indexPath: IndexPath) = (item!,indexPath)
+        dragItem.localObject = itemObj
         return [dragItem]
     }
 }
@@ -179,7 +189,8 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     //note:  dstIndexPath.  : coordinator.destinationIndexPath
     //       sourceIndexPath: coordinator.items.sourceIndexPath
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
-        print(" performDropWith ")
+        print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  performDropWith")
+
         let destinationIndexPath: IndexPath
         if let indexPath = coordinator.destinationIndexPath  {
             destinationIndexPath = indexPath
