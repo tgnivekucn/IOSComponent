@@ -125,7 +125,7 @@ extension CustomTableViewCell: UICollectionViewDataSource {
                 print("refresh cellForItemAt rowNum: \(rowNum), index: \(indexPath.row), item: \(item)")
 
                 cell.mLabel.text = "\(item)"
-                if indexPath.row % 2 == 0 {
+                if item % 2 == 0 {
                     cell.backgroundColor = UIColor.gray
                 } else {
                     cell.backgroundColor = UIColor.green
