@@ -40,7 +40,7 @@ extension ViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell1", for: indexPath)
         if let cell = cell as? CustomTableViewCell {
-           cell.setup(delegate: self, rowNum: indexPath.row)
+           cell.setup(delegate: self)
         }
 
         return cell
@@ -89,8 +89,13 @@ extension ViewController: ComminicationBetweenCellAndTableView {
     
     //moveItem內須實作 getRowNumByCollectionViewTagOrObject(),來區分是否cell有移動到別的列
     func moveItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, srcRowNum: Int, dstCollectionView: UICollectionView) {
-        let centerOfDstCollectionView = CGPoint(x: dstCollectionView.center.x, y: dstCollectionView.center.y)
-        let dstRow: Int = mTableView.indexPathForRow(at: centerOfDstCollectionView)?.row ?? 0
+        var dstRow: Int = 0
+        let p = dstCollectionView.convert(dstCollectionView.center, to: self.mTableView)
+        if let indexPath = mTableView.indexPathForRow(at: p) {
+            dstRow = indexPath.row
+        }
+        print("ViewController  moveItem: srcRowNum: \(srcRowNum), dstRowNum: \(dstRow)")
+
         if dstRow == srcRowNum { //same row //do reorder
             print("同個row reorder, item is: \(item)  from 第\(sourceIndexPath.row)個 to 第\(destinationIndexPath.row)個")
             switch srcRowNum {

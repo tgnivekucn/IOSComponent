@@ -50,9 +50,8 @@ class CustomTableViewCell: UITableViewCell {
         // Configure the view for the selected state
     }
     
-    func setup(delegate: ComminicationBetweenCellAndTableView, rowNum: Int) {
+    func setup(delegate: ComminicationBetweenCellAndTableView) {
         self.delegate = delegate
-        self.rowNum = rowNum
     }
     
   
@@ -85,7 +84,7 @@ class CustomTableViewCell: UITableViewCell {
                 print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")!  copyItem: destinationIndexPath.section is: \(destinationIndexPath.section), row is: \(destinationIndexPath.row), index is: \(index)")
                 print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem: sourceIndexPath.section is: \(srcindexPath.section), row is: \(srcindexPath.row)")
                 
-                delegate?.moveItem(item: tmp.data , sourceIndexPath: srcindexPath, destinationIndexPath: destinationIndexPath, srcRowNum: rowNum, dstCollectionView: collectionView)
+                delegate?.moveItem(item: tmp.data , sourceIndexPath: srcindexPath, destinationIndexPath: destinationIndexPath, srcRowNum: srcindexPath.row, dstCollectionView: collectionView)
                 
                 
                 //TODO
@@ -191,7 +190,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     func collectionView(_ collectionView: UICollectionView, performDropWith coordinator: UICollectionViewDropCoordinator) {
         print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  performDropWith")
 
-        /*
+        
         let destinationIndexPath: IndexPath
         if let indexPath = coordinator.destinationIndexPath  {
             destinationIndexPath = indexPath
@@ -209,7 +208,7 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
         default:
             return
         }
-        */
+        
     }
 }
 
