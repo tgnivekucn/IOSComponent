@@ -126,15 +126,19 @@ extension ViewController: ComminicationBetweenCellAndTableView {
             switch srcRowNum {
                 case 0:
                     dataArr.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr.count is: \(dataArr.count)")
                     break
                 case 1:
                     dataArr1.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr1.count is: \(dataArr1.count)")
                     break
                 case 2:
                     dataArr2.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr2.count is: \(dataArr2.count)")
                     break
                 case 3:
                     dataArr3.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr3.count is: \(dataArr3.count)")
                     break
                 default:
                     break
@@ -142,15 +146,19 @@ extension ViewController: ComminicationBetweenCellAndTableView {
             switch dstRow {
                 case 0:
                     dataArr.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr.count is: \(dataArr.count)")
                     break
                 case 1:
                     dataArr1.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr1.count is: \(dataArr1.count)")
                     break
                 case 2:
                     dataArr2.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr2.count is: \(dataArr2.count)")
                     break
                 case 3:
                     dataArr3.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr3.count is: \(dataArr3.count)")
                     break
                 default:
                     break
@@ -197,12 +205,21 @@ extension ViewController: ComminicationBetweenCellAndTableView {
     }
     
     func getCollectionViewName(v: UICollectionView) -> String {
-        var p = v.convert(v.center, to: self.mTableView)
+        let p = v.convert(v.center, to: self.mTableView)
 
         if let indexPath = mTableView.indexPathForRow(at: p) {
             return "CollectionView\(indexPath.row)"
         }
         return "CollectionView_NULL"
+    }
+    
+    func getTableViewRow(v: UICollectionView) -> Int {
+        var dstRow: Int = 0
+        let p = v.convert(v.center, to: self.mTableView)
+        if let indexPath = mTableView.indexPathForRow(at: p) {
+            dstRow = indexPath.row
+        }
+        return dstRow
     }
 }
 

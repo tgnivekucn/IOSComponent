@@ -18,6 +18,7 @@ protocol ComminicationBetweenCellAndTableView: class {
     func getDataArrCount(rowNum: Int) -> Int
     func getCollectionViewByTableViewRow(rowNum: Int) -> UICollectionView?
     func getCollectionViewName(v: UICollectionView) -> String
+    func getTableViewRow(v: UICollectionView) -> Int
 
 }
 class EmbeddedCollectionViewCell: UICollectionViewCell {
@@ -29,7 +30,6 @@ class CustomTableViewCell: UITableViewCell {
     
 //    var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
     weak var delegate: ComminicationBetweenCellAndTableView? = nil
-    var rowNum = 0 //for identifying the item is in the same collectionView or not after drag/drop
     override func awakeFromNib() {
         super.awakeFromNib()
         // Initialization code
@@ -78,20 +78,20 @@ class CustomTableViewCell: UITableViewCell {
                 
                 let indexPath = IndexPath(row: destinationIndexPath.row, section: destinationIndexPath.section)
 
-                let tmp: (data: Int,indexPath: IndexPath) = item.dragItem.localObject as! (data: Int, indexPath: IndexPath)
+                let tmp: (data: Int, indexPath: IndexPath, tableViewRowNum: Int) = item.dragItem.localObject as! (data: Int, indexPath: IndexPath, tableViewRowNum: Int)
                 let srcindexPath = IndexPath(row: tmp.indexPath.row, section: tmp.indexPath.section)
 
                 print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")!  copyItem: destinationIndexPath.section is: \(destinationIndexPath.section), row is: \(destinationIndexPath.row), index is: \(index)")
                 print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem: sourceIndexPath.section is: \(srcindexPath.section), row is: \(srcindexPath.row)")
                 
-                delegate?.moveItem(item: tmp.data , sourceIndexPath: srcindexPath, destinationIndexPath: destinationIndexPath, srcRowNum: srcindexPath.row, dstCollectionView: collectionView)
+                delegate?.moveItem(item: tmp.data , sourceIndexPath: srcindexPath, destinationIndexPath: destinationIndexPath, srcRowNum: tmp.tableViewRowNum, dstCollectionView: collectionView)
                 
                 
                 //TODO
                 //在這裡要區分deleteItems at sourceIndexPath的collectionView是srcCollectionView或是dstCollecctionView
                 //note: 理論上應該要在DragDelegate的protocol function中,讓srcCollectionView去刪除sourceIndexPath
                 //      然後在dstCollectionView中去新增destinationIndexPath
-                if let srcCollectionView = delegate?.getCollectionViewByTableViewRow(rowNum: rowNum) {
+                if let srcCollectionView = delegate?.getCollectionViewByTableViewRow(rowNum: tmp.tableViewRowNum) {
                     print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  copyItem:  srcCollectionView is: \(delegate?.getCollectionViewName(v: srcCollectionView) ?? "")")
                     srcCollectionView.deleteItems(at: [srcindexPath])
                 }
@@ -109,6 +109,7 @@ class CustomTableViewCell: UITableViewCell {
 
 extension CustomTableViewCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
+        let rowNum: Int = delegate?.getTableViewRow(v: collectionView) ?? 0
         let dataArrCount: Int = delegate?.getDataArrCount(rowNum: rowNum) ?? 0
         print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  numberOfItems is: \(dataArrCount)")
         return dataArrCount
@@ -117,6 +118,7 @@ extension CustomTableViewCell: UICollectionViewDataSource {
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "collectionViewCell1", for: indexPath)
         if let cell = cell as? EmbeddedCollectionViewCell {
+            let rowNum: Int = delegate?.getTableViewRow(v: collectionView) ?? 0
             let dataArrCount = delegate?.getDataArrCount(rowNum: rowNum) ?? 0
             if indexPath.row < dataArrCount {
                 let item: Int = delegate?.getItem(rowNum: rowNum, index: indexPath.row) ?? 0
@@ -134,6 +136,7 @@ extension CustomTableViewCell: UICollectionViewDataSource {
     }
     
     func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
+        let rowNum: Int = delegate?.getTableViewRow(v: collectionView) ?? 0
         delegate?.reorderItem(item: sourceIndexPath.item, sourceIndexPath: sourceIndexPath, destinationIndexPath: destinationIndexPath, rowNum: rowNum)
 //        let temp = dataArr.remove(at: sourceIndexPath.item)
 //        dataArr.insert(temp, at: destinationIndexPath.item)
@@ -158,10 +161,13 @@ extension CustomTableViewCell: UICollectionViewDelegate {
 
 extension CustomTableViewCell: UICollectionViewDragDelegate {
     func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-        let item = delegate?.getItem(rowNum: rowNum, index: indexPath.row)//        let item = dataArr[indexPath.row]
+        let tableViewRowNum: Int = delegate?.getTableViewRow(v: collectionView) ?? 0
+        print("\(delegate?.getCollectionViewName(v: collectionView) ?? "")  itemsForBeginning, dragItem tableViewRowNum is: \(tableViewRowNum)")
+
+        let item = delegate?.getItem(rowNum: tableViewRowNum, index: indexPath.row)//        let item = dataArr[indexPath.row]
         let itemProvider = NSItemProvider(object: String(item!) as NSString)
         let dragItem = UIDragItem(itemProvider: itemProvider)
-        let itemObj: (data: Int, indexPath: IndexPath) = (item!,indexPath)
+        let itemObj: (data: Int, indexPath: IndexPath, tableViewRowNum: Int) = (item!,indexPath, tableViewRowNum)
         dragItem.localObject = itemObj
         return [dragItem]
     }
@@ -202,7 +208,6 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
         }
         switch coordinator.proposal.operation {
         case .move:
-//            print("performDropWith current action is: (2) copy, location is: \(coordinator.session.location(in: self))")
             self.copyItems(coordinator: coordinator, destinationIndexPath: destinationIndexPath, collectionView: collectionView)
             break
         default:
