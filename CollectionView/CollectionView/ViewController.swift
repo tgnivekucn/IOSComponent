@@ -11,6 +11,7 @@ class CustomCollectionViewCell: UICollectionViewCell {
     @IBOutlet weak var test: UILabel!
 }
 class ViewController: UIViewController {
+    @IBOutlet weak var mView: UIView!
     
     @IBOutlet weak var mCollectionView: UICollectionView!
     var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
@@ -30,6 +31,12 @@ class ViewController: UIViewController {
         let collectionViewFlowControl = UICollectionViewFlowLayout()
         collectionViewFlowControl.scrollDirection = UICollectionView.ScrollDirection.horizontal
         mCollectionView.setCollectionViewLayout(collectionViewFlowControl, animated: false)
+        
+        
+        
+        //init 
+        let dragInteraction = UIDragInteraction(delegate: self)
+        mView.addInteraction(dragInteraction)
         
     }
     
