@@ -13,8 +13,11 @@ class CustomCollectionViewCell: UICollectionViewCell {
 class ViewController: UIViewController {
     @IBOutlet weak var mTableView: UITableView!
     @IBOutlet weak var mCollectionView: UICollectionView!
-    var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20]
-    
+    var dataArr = [0,1,2,3,4,5,6,7,8,9]
+    var dataArr1 = [10,11,12,13,14,15,16,17,18,19]
+    var dataArr2 = [100,101,102,103,104,105,106,107,108,109]
+    var dataArr3 = [1000,1001,1002,1003,1004,1005,1006,1007,1008,1009]
+
     let tableViewTotalRow = 4
     
     
@@ -24,39 +27,9 @@ class ViewController: UIViewController {
         //init tableView setting
         mTableView.dataSource = self
         mTableView.delegate = self
-        
-        //init collectionView setting
-        mCollectionView.dataSource = self
-        mCollectionView.delegate = self
-        //        mCollectionView.dragInteractionEnabled = true // To enable intra-app drags on iPhone
-        
-        mCollectionView.canCancelContentTouches = false
-        mCollectionView.delaysContentTouches = false
-        //        self.collectionView!.addGestureRecognizer(UILongPressGestureRecognizer(target: self, action: "handleLongGesture:"))
-        //        let gesture = UITapGestureRecognizer(target: self, action: #selector(onTapGesture(_:)))
-        //UITapGestureRecognizer
-        let gesture = UIPanGestureRecognizer(target: self, action: #selector(onTapGesture(_:)))
-        mCollectionView.addGestureRecognizer(gesture)
-        
     }
     
-    @objc func onTapGesture(_ gesture:UIPanGestureRecognizer) {
-        print("Tapped!!")
-        switch(gesture.state) {
-        case UIGestureRecognizerState.began:
-            guard let selectedIndexPath = self.mCollectionView!.indexPathForItem(at: gesture.location(in: self.mCollectionView)) else
-            {
-                break
-            }
-            mCollectionView!.beginInteractiveMovementForItem(at: selectedIndexPath)
-        case UIGestureRecognizerState.changed:
-            mCollectionView!.updateInteractiveMovementTargetPosition(gesture.location(in: gesture.view!))
-        case UIGestureRecognizerState.ended:
-            mCollectionView!.endInteractiveMovement()
-        default:
-            mCollectionView!.cancelInteractiveMovement()
-        }
-    }
+ 
 }
 
 extension ViewController: UITableViewDataSource {
@@ -66,6 +39,9 @@ extension ViewController: UITableViewDataSource {
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell1", for: indexPath)
+        if let cell = cell as? CustomTableViewCell {
+           cell.setup(delegate: self)
+        }
         return cell
     }
     
@@ -78,46 +54,172 @@ extension ViewController: UITableViewDelegate {
 
 }
 
-
-
-
-
-extension ViewController: UICollectionViewDataSource {
-    func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int {
-        return dataArr.count
+extension ViewController: ComminicationBetweenCellAndTableView {
+    func getItem(rowNum: Int, index: Int) -> Int {
+        switch rowNum {
+         case 0:
+             return dataArr[index]
+         case 1:
+             return dataArr1[index]
+         case 2:
+             return dataArr2[index]
+         case 3:
+             return dataArr3[index]
+         default:
+             return 0
+         }
     }
     
-    func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell {
-        let cell = collectionView.dequeueReusableCell(withReuseIdentifier: "cell1", for: indexPath)
-        if let cell = cell as? CustomCollectionViewCell {
-            if indexPath.row < dataArr.count {
-                cell.test.text = "\(dataArr[indexPath.row])"
-            }
+    func getDataArrCount(rowNum: Int) -> Int {
+        switch rowNum {
+        case 0:
+            return dataArr.count
+        case 1:
+            return dataArr1.count
+        case 2:
+            return dataArr2.count
+        case 3:
+            return dataArr3.count
+        default:
+            return 0
         }
-        return cell
     }
     
-    func collectionView(_ collectionView: UICollectionView, moveItemAt sourceIndexPath: IndexPath, to destinationIndexPath: IndexPath) {
-        let temp = dataArr.remove(at: sourceIndexPath.item)
-        dataArr.insert(temp, at: destinationIndexPath.item)
+    
+    //moveItem內須實作 getRowNumByCollectionViewTagOrObject(),來區分是否cell有移動到別的列
+    func moveItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, srcRowNum: Int, dstCollectionView: UICollectionView) {
+        var dstRow: Int = 0
+        let p = dstCollectionView.convert(dstCollectionView.center, to: self.mTableView)
+        if let indexPath = mTableView.indexPathForRow(at: p) {
+            dstRow = indexPath.row
+        }
+        print("ViewController  moveItem: srcRowNum: \(srcRowNum), dstRowNum: \(dstRow)")
+
+        if dstRow == srcRowNum { //same row //do reorder
+            print("同個row reorder, item is: \(item)  from 第\(sourceIndexPath.row)個 to 第\(destinationIndexPath.row)個")
+            switch srcRowNum {
+            case 0:
+                dataArr.remove(at: sourceIndexPath.row)
+                dataArr.insert(item, at: destinationIndexPath.row)
+                break
+            case 1:
+                dataArr1.remove(at: sourceIndexPath.row)
+                dataArr1.insert(item, at: destinationIndexPath.row)
+                break
+            case 2:
+                dataArr2.remove(at: sourceIndexPath.row)
+                dataArr2.insert(item, at: destinationIndexPath.row)
+                break
+            case 3:
+                dataArr3.remove(at: sourceIndexPath.row)
+                dataArr3.insert(item, at: destinationIndexPath.row)
+                break
+            default:
+                break
+            }
+            print(dataArr)
+        } else {
+            print("不同個row reorder: 刪除tableVIew第\(srcRowNum)列的第\(sourceIndexPath.row)個")
+            print("不同個row reorder: 新增tableVIew第\(dstRow)列的第\(destinationIndexPath.row)個")
+
+            switch srcRowNum {
+                case 0:
+                    dataArr.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr.count is: \(dataArr.count)")
+                    break
+                case 1:
+                    dataArr1.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr1.count is: \(dataArr1.count)")
+                    break
+                case 2:
+                    dataArr2.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr2.count is: \(dataArr2.count)")
+                    break
+                case 3:
+                    dataArr3.remove(at: sourceIndexPath.row)
+                    print("不同個row reorder: 刪除後,dataArr3.count is: \(dataArr3.count)")
+                    break
+                default:
+                    break
+                }
+            switch dstRow {
+                case 0:
+                    dataArr.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr.count is: \(dataArr.count)")
+                    break
+                case 1:
+                    dataArr1.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr1.count is: \(dataArr1.count)")
+                    break
+                case 2:
+                    dataArr2.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr2.count is: \(dataArr2.count)")
+                    break
+                case 3:
+                    dataArr3.insert(item, at: destinationIndexPath.row)
+                    print("不同個row reorder: 新增後,dataArr3.count is: \(dataArr3.count)")
+                    break
+                default:
+                    break
+                }
+        }
     }
     
+    
+    func reorderItem(item: Int, sourceIndexPath: IndexPath, destinationIndexPath: IndexPath, rowNum: Int) {
+        print("reorderItem: item is: \(item) , src row is: \(sourceIndexPath.row), dst row is: \(destinationIndexPath.row)")
+        switch rowNum {
+                 case 0:
+                     dataArr.remove(at: sourceIndexPath.row)
+                     dataArr.insert(item, at: destinationIndexPath.row)
+                     break
+                 case 1:
+                     dataArr1.remove(at: sourceIndexPath.row)
+                     dataArr1.insert(item, at: destinationIndexPath.row)
+                     break
+                 case 2:
+                     dataArr2.remove(at: sourceIndexPath.row)
+                     dataArr2.insert(item, at: destinationIndexPath.row)
+                     break
+                 case 3:
+                     dataArr3.remove(at: sourceIndexPath.row)
+                     dataArr3.insert(item, at: destinationIndexPath.row)
+                     break
+                 default:
+                     break
+                 }
+    }
+    //暫時不使用
+    func isInTableView(v: UICollectionView, session: UIDropSession, dstIndexPath: IndexPath?) -> Bool {
+        return true //TODO
+    }
+    
+    
+    func getCollectionViewByTableViewRow(rowNum: Int) -> UICollectionView? {
+        let indexPath = IndexPath(row: rowNum, section: 0)
+        if let cell = mTableView.cellForRow(at: indexPath), let customCell = cell as? CustomTableViewCell {
+            return customCell.mCollectionView
+        }
+        return nil
+    }
+    
+    func getCollectionViewName(v: UICollectionView) -> String {
+        let p = v.convert(v.center, to: self.mTableView)
+
+        if let indexPath = mTableView.indexPathForRow(at: p) {
+            return "CollectionView\(indexPath.row)"
+        }
+        return "CollectionView_NULL"
+    }
+    
+    func getTableViewRow(v: UICollectionView) -> Int {
+        var dstRow: Int = 0
+        let p = v.convert(v.center, to: self.mTableView)
+        if let indexPath = mTableView.indexPathForRow(at: p) {
+            dstRow = indexPath.row
+        }
+        return dstRow
+    }
 }
 
-extension ViewController: UICollectionViewDelegate {
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
-        print("didSelectItemAt row: \(indexPath.row)")
-    }
-    
-    func collectionView(_ collectionView: UICollectionView, didDeselectItemAt indexPath: IndexPath) {
-        print("didDeselectItemAt row: \(indexPath.row)")
-    }
-}
 
-//extension ViewController: UICollectionViewDragDelegate {
-//    func collectionView(_ collectionView: UICollectionView, itemsForBeginning session: UIDragSession, at indexPath: IndexPath) -> [UIDragItem] {
-//        <#code#>
-//    }
-//    
-//    
-//}
