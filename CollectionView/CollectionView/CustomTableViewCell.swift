@@ -34,7 +34,8 @@ class CustomTableViewCell: UITableViewCell {
         mCollectionView.delegate = self
         mCollectionView.dragDelegate = self
         mCollectionView.dropDelegate = self
-        
+        mCollectionView.backgroundColor = UIColor.red
+        mCollectionView.contentInset = UIEdgeInsets(top: 0, left: 50, bottom: 0, right: 50)
         
         //Set collectionView item size & scroll direction
         let collectionViewFlowControl = UICollectionViewFlowLayout()

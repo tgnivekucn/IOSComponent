@@ -28,7 +28,7 @@
                                             <autoresizingMask key="autoresizingMask"/>
                                             <subviews>
                                                 <collectionView clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="scaleToFill" showsVerticalScrollIndicator="NO" dataMode="prototypes" translatesAutoresizingMaskIntoConstraints="NO" id="QJi-Om-iam">
-                                                    <rect key="frame" x="20" y="11" width="374" height="136"/>
+                                                    <rect key="frame" x="70" y="11" width="274" height="136"/>
                                                     <color key="backgroundColor" systemColor="systemBackgroundColor" cocoaTouchSystemColor="whiteColor"/>
                                                     <collectionViewFlowLayout key="collectionViewLayout" automaticEstimatedItemSize="YES" minimumLineSpacing="10" minimumInteritemSpacing="10" id="YhC-4E-RE4">
                                                         <size key="itemSize" width="104" height="61"/>
@@ -67,8 +67,8 @@
                                             <constraints>
                                                 <constraint firstItem="QJi-Om-iam" firstAttribute="bottom" secondItem="AlI-6z-LWW" secondAttribute="bottomMargin" id="Buf-NZ-gEd"/>
                                                 <constraint firstItem="QJi-Om-iam" firstAttribute="top" secondItem="AlI-6z-LWW" secondAttribute="topMargin" id="TiP-CF-x8B"/>
-                                                <constraint firstAttribute="trailingMargin" secondItem="QJi-Om-iam" secondAttribute="trailing" id="ZMJ-YW-s5s"/>
-                                                <constraint firstItem="QJi-Om-iam" firstAttribute="leading" secondItem="AlI-6z-LWW" secondAttribute="leadingMargin" id="qKq-rz-Fh2"/>
+                                                <constraint firstAttribute="trailingMargin" secondItem="QJi-Om-iam" secondAttribute="trailing" constant="50" id="ZMJ-YW-s5s"/>
+                                                <constraint firstItem="QJi-Om-iam" firstAttribute="leading" secondItem="AlI-6z-LWW" secondAttribute="leadingMargin" constant="50" id="qKq-rz-Fh2"/>
                                             </constraints>
                                         </tableViewCellContentView>
                                         <connections>

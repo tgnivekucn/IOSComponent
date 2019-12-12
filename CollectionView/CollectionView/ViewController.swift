@@ -41,6 +41,7 @@ extension ViewController: UITableViewDataSource {
         let cell = tableView.dequeueReusableCell(withIdentifier: "cell1", for: indexPath)
         if let cell = cell as? CustomTableViewCell {
            cell.setup(delegate: self)
+            cell.contentView.backgroundColor = UIColor.blue
         }
         return cell
     }
