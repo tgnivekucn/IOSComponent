@@ -13,10 +13,10 @@ class CustomCollectionViewCell: UICollectionViewCell {
 class ViewController: UIViewController {
     @IBOutlet weak var mTableView: UITableView!
     @IBOutlet weak var mCollectionView: UICollectionView!
-    var dataArr = [0,1,2,3,4,5,6,7,8,9]
-    var dataArr1 = [10,11,12,13,14,15,16,17,18,19]
-    var dataArr2 = [100,101,102,103,104,105,106,107,108,109]
-    var dataArr3 = [1000,1001,1002,1003,1004,1005,1006,1007,1008,1009]
+    var dataArr = [0,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19]
+    var dataArr1 = [100,101,102,103,104,105,106,107,108,109,110,111,112,113,114,115,116,117,118,119]
+    var dataArr2 = [1000,1001,1002,1003,1004,1005,1006,1007,1008,1009,1010,1011,1012,1013,1014,1015,1016,1017,1018,1019]
+    var dataArr3 = [10000,10001,10002,10003,10004,10005,10006,10007,10008,10009,100010,10011,10012,10013,10014,10015,10016,10017,10018,10019]
 
     let tableViewTotalRow = 4
     
@@ -100,19 +100,36 @@ extension ViewController: ComminicationBetweenCellAndTableView {
             switch srcRowNum {
             case 0:
                 dataArr.remove(at: sourceIndexPath.row)
-                dataArr.insert(item, at: destinationIndexPath.row)
+                if destinationIndexPath.row >= dataArr.count {
+                    dataArr.append(item)
+                } else {
+                    dataArr.insert(item, at: destinationIndexPath.row)
+                }
                 break
             case 1:
                 dataArr1.remove(at: sourceIndexPath.row)
-                dataArr1.insert(item, at: destinationIndexPath.row)
+                if destinationIndexPath.row >= dataArr1.count {
+                       dataArr1.append(item)
+                   } else {
+                       dataArr1.insert(item, at: destinationIndexPath.row)
+                   }
                 break
             case 2:
                 dataArr2.remove(at: sourceIndexPath.row)
-                dataArr2.insert(item, at: destinationIndexPath.row)
+                if destinationIndexPath.row >= dataArr2.count {
+                    dataArr2.append(item)
+                } else {
+                    dataArr2.insert(item, at: destinationIndexPath.row)
+                }
                 break
             case 3:
                 dataArr3.remove(at: sourceIndexPath.row)
                 dataArr3.insert(item, at: destinationIndexPath.row)
+                if destinationIndexPath.row >= dataArr3.count {
+                    dataArr3.append(item)
+                } else {
+                    dataArr3.insert(item, at: destinationIndexPath.row)
+                }
                 break
             default:
                 break
@@ -144,19 +161,35 @@ extension ViewController: ComminicationBetweenCellAndTableView {
                 }
             switch dstRow {
                 case 0:
-                    dataArr.insert(item, at: destinationIndexPath.row)
+                    if destinationIndexPath.row >= dataArr.count {
+                        dataArr.append(item)
+                    } else {
+                        dataArr.insert(item, at: destinationIndexPath.row)
+                    }
                     print("不同個row reorder: 新增後,dataArr.count is: \(dataArr.count)")
                     break
                 case 1:
-                    dataArr1.insert(item, at: destinationIndexPath.row)
+                    if destinationIndexPath.row >= dataArr1.count {
+                        dataArr1.append(item)
+                    } else {
+                        dataArr1.insert(item, at: destinationIndexPath.row)
+                    }
                     print("不同個row reorder: 新增後,dataArr1.count is: \(dataArr1.count)")
                     break
                 case 2:
-                    dataArr2.insert(item, at: destinationIndexPath.row)
+                    if destinationIndexPath.row >= dataArr2.count {
+                        dataArr2.append(item)
+                    } else {
+                        dataArr2.insert(item, at: destinationIndexPath.row)
+                    }
                     print("不同個row reorder: 新增後,dataArr2.count is: \(dataArr2.count)")
                     break
                 case 3:
-                    dataArr3.insert(item, at: destinationIndexPath.row)
+                    if destinationIndexPath.row >= dataArr3.count {
+                        dataArr3.append(item)
+                    } else {
+                        dataArr3.insert(item, at: destinationIndexPath.row)
+                    }
                     print("不同個row reorder: 新增後,dataArr3.count is: \(dataArr3.count)")
                     break
                 default:
