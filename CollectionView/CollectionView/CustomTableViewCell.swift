@@ -37,9 +37,13 @@ class CustomTableViewCell: UITableViewCell {
         mCollectionView.backgroundColor = UIColor.red
         mCollectionView.contentInset = UIEdgeInsets(top: 0, left: 50, bottom: 0, right: 50)
         
+        
+        let scrollView = mCollectionView as! UIScrollView
+        scrollView.delegate = self
+        
         //Set collectionView item size & scroll direction
         let collectionViewFlowControl = UICollectionViewFlowLayout()
-//        collectionViewFlowControl.itemSize = CGSize(width: 90, height: 40)
+        collectionViewFlowControl.itemSize = CGSize(width: 100, height: 40)
         collectionViewFlowControl.scrollDirection = UICollectionView.ScrollDirection.horizontal
         mCollectionView.setCollectionViewLayout(collectionViewFlowControl, animated: false)
     }
@@ -203,3 +207,39 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     }
 }
 
+
+extension CustomTableViewCell: UIScrollViewDelegate {
+    
+    //Note: Use this for detecting autoScroll
+    func scrollViewDidScroll(_ scrollView: UIScrollView) { // any offset changes
+        print("test (1) scrollViewDidScroll, contentOffset is: \(scrollView.contentOffset)")
+    }
+    
+    // called on start of dragging (may require some time and or distance to move)
+    func scrollViewWillBeginDragging(_ scrollView: UIScrollView) {
+        print("test (2) scrollViewWillBeginDragging")
+
+    }
+
+    // called on finger up if the user dragged. velocity is in points/millisecond. targetContentOffset may be changed to adjust where the scroll view comes to rest
+    func scrollViewWillEndDragging(_ scrollView: UIScrollView, withVelocity velocity: CGPoint, targetContentOffset: UnsafeMutablePointer<CGPoint>) {
+        print("test (3) scrollViewWillEndDragging")
+
+    }
+
+    // called on finger up if the user dragged. decelerate is true if it will continue moving afterwards
+    func scrollViewDidEndDragging(_ scrollView: UIScrollView, willDecelerate decelerate: Bool) {
+        print("test (4) scrollViewDidEndDragging")
+    }
+
+    
+    func scrollViewWillBeginDecelerating(_ scrollView: UIScrollView) {// called on finger up as we are moving
+        print("test (5) scrollViewWillBeginDecelerating")
+
+    }
+    func scrollViewDidEndDecelerating(_ scrollView: UIScrollView) { // called when scroll view grinds to a halt
+        print("test (6) scrollViewWillBeginDecelerating")
+
+    }
+    
+}
