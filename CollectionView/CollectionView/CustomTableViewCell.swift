@@ -36,8 +36,9 @@ class CustomTableViewCell: UITableViewCell {
         mCollectionView.dropDelegate = self
         
         
-        //Set collectionView to one row
+        //Set collectionView item size & scroll direction
         let collectionViewFlowControl = UICollectionViewFlowLayout()
+        collectionViewFlowControl.itemSize = CGSize(width: 100, height: 30)
         collectionViewFlowControl.scrollDirection = UICollectionView.ScrollDirection.horizontal
         mCollectionView.setCollectionViewLayout(collectionViewFlowControl, animated: false)
     }
