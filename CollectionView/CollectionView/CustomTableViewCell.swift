@@ -43,11 +43,14 @@ class CustomTableViewCell: UITableViewCell {
         
         //Set collectionView item size & scroll direction
         let collectionViewFlowControl = UICollectionViewFlowLayout()
-        collectionViewFlowControl.itemSize = CGSize(width: 100, height: 40)
+        collectionViewFlowControl.itemSize = CGSize(width: 50, height: 40)
         collectionViewFlowControl.scrollDirection = UICollectionView.ScrollDirection.horizontal
         mCollectionView.setCollectionViewLayout(collectionViewFlowControl, animated: false)
-    }
-    
+        
+        }
+        
+
+
     override func setSelected(_ selected: Bool, animated: Bool) {
         super.setSelected(selected, animated: animated)
         // Configure the view for the selected state
@@ -174,6 +177,11 @@ extension CustomTableViewCell: UICollectionViewDropDelegate {
     
     //在手指移動的過程中,持續update之間的UI change by UICollectionViewDropProposal
     func collectionView(_ collectionView: UICollectionView, dropSessionDidUpdate session: UIDropSession, withDestinationIndexPath destinationIndexPath: IndexPath?) -> UICollectionViewDropProposal {
+        let tmp = session.location(in: collectionView)
+        let distance = collectionView.frame.width - tmp.x
+        
+        
+        print("test  dropSessionDidUpdate, distance between border is: \(distance)")
         //TODO 待確認是否需要check isInTableView
         return UICollectionViewDropProposal(operation: .move, intent: .insertAtDestinationIndexPath)
 
@@ -212,7 +220,7 @@ extension CustomTableViewCell: UIScrollViewDelegate {
     
     //Note: Use this for detecting autoScroll
     func scrollViewDidScroll(_ scrollView: UIScrollView) { // any offset changes
-        print("test (1) scrollViewDidScroll, contentOffset is: \(scrollView.contentOffset)")
+        print("test (1) scrollViewDidScroll, contentOffset is: \(scrollView.contentOffset)---------------------")
     }
     
     // called on start of dragging (may require some time and or distance to move)

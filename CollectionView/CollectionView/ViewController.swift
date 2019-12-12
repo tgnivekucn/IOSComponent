@@ -20,6 +20,7 @@ class ViewController: UIViewController {
 
     let tableViewTotalRow = 4
     
+    var fingerLocation = CGPoint(x: 0,y: 0)
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -27,8 +28,16 @@ class ViewController: UIViewController {
         //init tableView setting
         mTableView.dataSource = self
         mTableView.delegate = self
+        
+//        let g = UIPanGestureRecognizer(target: self, action: #selector(panAction))
+//        self.view.addGestureRecognizer(g)
     }
     
+//    @objc func panAction(gr:UIPanGestureRecognizer) {
+//        let loc:CGPoint = gr.location(in: gr.view)
+//        fingerLocation = loc
+//        print("fingerLocation: \(fingerLocation)")
+//    }
  
 }
 
