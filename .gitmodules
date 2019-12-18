@@ -6,4 +6,4 @@
 	url = https://github.com/tgnivekucn/IOSComponent
 [submodule "AVPlayer"]
 	path = AVPlayer
-	url = https://github.com/tgnivekucn/IOSComponent.git
+	url = https://github.com/tgnivekucn/IOSComponent
