@@ -1,0 +1,14 @@
+# Xcode
+.DS_Store
+build
+report.xml
+*.pbxuser
+*.xcuserdata
+.idea/
+*.xccheckout
+*.xcworkspace
+
+#CocoaPods
+Pods
+Podfile.lock
+xcschemes
