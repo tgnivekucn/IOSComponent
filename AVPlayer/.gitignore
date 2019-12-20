@@ -3,7 +3,7 @@
 build
 report.xml
 *.pbxuser
-*.xcuserdata
+*/xcuserdata/
 .idea/
 *.xccheckout
 *.xcworkspace
