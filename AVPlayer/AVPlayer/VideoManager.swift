@@ -10,6 +10,9 @@ import Foundation
 import AVFoundation
 class VideoManager {
     
+
+    
+    
     //ref: https://gist.github.com/SheffieldKevin/6e9de245bc214d9be7c6
     static func printVideoInfo(url: URL) {
         let theOpts = [
@@ -53,5 +56,22 @@ class VideoManager {
             }
         }
         
+    }
+}
+
+extension VideoManager {
+    private func setupCustomPlayByLocalFile(url: URL) {
+        /*
+        let theOpts = [
+            AVURLAssetPreferPreciseDurationAndTimingKey : true,
+            AVURLAssetReferenceRestrictionsKey : 0 // AVAssetReferenceRestrictions.RestrictionForbidNone
+            ] as [String : Any]
+        let asset = AVURLAsset(url: url, options: theOpts)
+        playerItem = AVPlayerItem(asset: asset)
+        player = AVPlayer(playerItem: playerItem)
+        let playerLayer = AVPlayerLayer(player: player)
+        playerLayer.frame = self.view.bounds
+        self.view.layer.addSublayer(playerLayer)
+        */
     }
 }

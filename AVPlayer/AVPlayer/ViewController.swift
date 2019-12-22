@@ -22,7 +22,8 @@ class ViewController: UIViewController {
     let url2 = Bundle.main.url(forResource: "test2", withExtension: "mp4")
     
     private var kvoContext = 0
-
+    private var kvoContext2 = 1
+    private var timeObserverToken: Any? = nil
     override func viewDidLoad() {
         super.viewDidLoad()
         //        setupCustomPlayer()
@@ -33,27 +34,29 @@ class ViewController: UIViewController {
         
         //        setupAVPlayer()
         //        setupAVPlayer(videoURL: url2!)
-        if let url = Bundle.main.url(forResource: "test", withExtension: "mp4") {
+        if let url = Bundle.main.url(forResource: "test2", withExtension: "mp4") {
             setupCustomPlayByLocalFile(url: url)
             VideoManager.printVideoInfo(url: url)
-            
             playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: .new, context: &kvoContext)
-
-//            if let item = newValue.currentItem {
-//                    item.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: .new, context: &kvoContext)
-//                    item.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.loadedTimeRanges), options: .new, context: &kvoContext)            }
-//
-//                let timeInterval = CMTime(value: 1, timescale: 2)
-//                self.timeObserverToken = newValue.addPeriodicTimeObserver(forInterval: timeInterval, queue: DispatchQueue.main, using: { (time: CMTime) in
-//                    print(time)
-//                    self.updatePositionSlider()
-//                })
-            
-            
         }
     }
     
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        addPeriodicTimeObserver()
+        NotificationCenter.default.addObserver(self,
+                                                 selector: #selector(playerItemDidPlayToEnd),
+                                                 name: .AVPlayerItemDidPlayToEndTime,
+                                                 object: player?.currentItem)
+    }
     
+    override func viewWillDisappear(_ animated: Bool) {
+        super.viewWillDisappear(animated)
+    }
+    
+    @objc func playerItemDidPlayToEnd() {
+        print("playerItemDidPlayToEnd")
+    }
     
     // MARK: - KVO
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey : Any]?, context: UnsafeMutableRawPointer?) {
@@ -87,6 +90,28 @@ class ViewController: UIViewController {
     }
     
     
+    func addPeriodicTimeObserver() {
+        // Invoke callback every half second
+        let interval = CMTime(seconds: 1,
+                              preferredTimescale: CMTimeScale(NSEC_PER_SEC))
+        // Add time observer. Invoke closure on the main queue.
+        timeObserverToken =
+            player.addPeriodicTimeObserver(forInterval: interval, queue: .main) {
+                [weak self] time in
+                // update player transport UI
+                print("current player time is: \(String(describing: self?.player.currentTime()))")
+        }
+    }
+    
+    func removePeriodicTimeObserver() {
+        if let timeObserverToken = timeObserverToken {
+            player.removeTimeObserver(timeObserverToken)
+        }
+    }
+    
+    deinit {
+        print("ViewController deinit")
+    }
     
     @IBAction func pressBtnAction(_ sender: UIButton) {
         playVideo()
@@ -153,7 +178,6 @@ class ViewController: UIViewController {
         let playerLayer = AVPlayerLayer(player: player)
         playerLayer.frame = self.view.bounds
         self.view.layer.addSublayer(playerLayer)
-        
     }
     
     func setupAVPlayer() {
