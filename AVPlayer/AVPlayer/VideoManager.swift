@@ -10,7 +10,22 @@ import Foundation
 import AVFoundation
 class VideoManager {
     
+    static func getFPSUsingAsset(asset: AVURLAsset) {
+        //Get FPS
+        let tracks = asset.tracks(withMediaType: .video)
+        let fps = tracks.first?.nominalFrameRate
+        print("fps is: \(fps)")
+    }
 
+    static func getFPSWhenPlaying(player: AVPlayer) {
+        if let currentItem = player.currentItem {
+            for track in currentItem.tracks {
+                if track.assetTrack?.mediaType  == AVMediaType.video {
+                    print("fps is: \(track.currentVideoFrameRate)")
+                }
+            }
+        }
+    }
     
     
     //ref: https://gist.github.com/SheffieldKevin/6e9de245bc214d9be7c6

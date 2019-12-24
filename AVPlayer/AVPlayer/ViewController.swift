@@ -9,6 +9,8 @@
 import UIKit
 import AVFoundation
 import AVKit
+import os.log
+import Photos
 class ViewController: UIViewController {
     
     var asset: AVAsset!
@@ -34,20 +36,22 @@ class ViewController: UIViewController {
         
         //        setupAVPlayer()
         //        setupAVPlayer(videoURL: url2!)
-        if let url = Bundle.main.url(forResource: "test2", withExtension: "mp4") {
-            setupCustomPlayByLocalFile(url: url)
-            VideoManager.printVideoInfo(url: url)
-            playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: .new, context: &kvoContext)
-        }
+//        if let url = Bundle.main.url(forResource: "test2", withExtension: "mp4") {
+//            setupCustomPlayByLocalFile(url: url)
+//            VideoManager.printVideoInfo(url: url)
+//            playerItem.addObserver(self, forKeyPath: #keyPath(AVPlayerItem.status), options: .new, context: &kvoContext)
+//        }
+        
+        test()
     }
     
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
-        addPeriodicTimeObserver()
-        NotificationCenter.default.addObserver(self,
-                                                 selector: #selector(playerItemDidPlayToEnd),
-                                                 name: .AVPlayerItemDidPlayToEndTime,
-                                                 object: player?.currentItem)
+//        addPeriodicTimeObserver()
+//        NotificationCenter.default.addObserver(self,
+//                                                 selector: #selector(playerItemDidPlayToEnd),
+//                                                 name: .AVPlayerItemDidPlayToEndTime,
+//                                                 object: player?.currentItem)
     }
     
     override func viewWillDisappear(_ animated: Bool) {
@@ -180,6 +184,159 @@ class ViewController: UIViewController {
         self.view.layer.addSublayer(playerLayer)
     }
     
+    /*
+     ["AVAssetExportPreset1920x1080", "AVAssetExportPresetLowQuality", "AVAssetExportPresetHEVC1920x1080WithAlpha", "AVAssetExportPresetAppleM4A", "AVAssetExportPresetHEVCHighestQuality", "AVAssetExportPreset640x480", "AVAssetExportPreset3840x2160", "AVAssetExportPresetHEVC3840x2160WithAlpha", "AVAssetExportPresetHEVC3840x2160", "AVAssetExportPresetHighestQuality", "AVAssetExportPreset1280x720", "AVAssetExportPresetMediumQuality", "AVAssetExportPreset960x540", "AVAssetExportPresetHEVCHighestQualityWithAlpha", "AVAssetExportPresetHEVC1920x1080"]
+
+     */
+    func test() {
+        let saveVideoToPhotos: (_ outputURL: URL) -> Void  = {
+            (outputURL: URL) -> Void in
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: outputURL)  }) {
+                    success, error in
+                    if success {
+                        os_log("Succesfully Saved", type: .debug)
+                    } else {
+                        os_log("Export failed: %@", type: .error,error?.localizedDescription ?? "error")
+                    }
+            }
+        }
+        let url = Bundle.main.url(forResource: "test", withExtension: "mp4")
+        let asset = AVAsset(url: url!)
+        let compatiblePresets = AVAssetExportSession.exportPresets(compatibleWith: asset)
+        if compatiblePresets.contains("AVAssetExportPresetLowQuality") {
+            if let exportSession = AVAssetExportSession(asset: asset, presetName: "AVAssetExportPresetLowQuality") {
+                exportSession.outputFileType = AVFileType.mov //AVFileTypeQuickTimeMovie
+                guard let documentDirectory = FileManager.default.urls(for: .documentDirectory,
+                                                                       in: .userDomainMask).first else {
+                  return
+                }
+                let url = documentDirectory.appendingPathComponent("MyOutput1.mov")
+                exportSession.outputURL = url
+                let start: CMTime = CMTimeMakeWithSeconds(1.0, preferredTimescale: 600)
+                let duration: CMTime = CMTimeMakeWithSeconds(3.0, preferredTimescale: 600)
+                let range: CMTimeRange = CMTimeRangeMake(start: start, duration: duration)
+                exportSession.timeRange = range
+                exportSession.exportAsynchronously { () -> Void in
+                    // Handle export results.
+                    switch exportSession.status {
+                    case .completed:
+                        os_log("Export completed", type: .debug)
+                        // Ensure permission to access Photo Library
+                        if PHPhotoLibrary.authorizationStatus() != .authorized {
+                          PHPhotoLibrary.requestAuthorization({ status in
+                            if status == .authorized {
+                                saveVideoToPhotos(exportSession.outputURL!)
+                            }
+                          })
+                        } else {
+                          saveVideoToPhotos(exportSession.outputURL!)
+                        }
+                        
+                    case .failed:
+                        os_log("Export failed: %@", type: .error, exportSession.error?.localizedDescription ?? "error")
+                        break
+                    case .cancelled:
+                        os_log("Export canceled", type: .debug)
+                        break
+                    default:
+                        break
+                    }
+                }
+            }
+        }
+
+        
+    
+        
+        /*
+         exportSession.outputURL = A file URL;
+           exportSession.outputFileType = AVFileTypeQuickTimeMovie;
+        
+           CMTime start = CMTimeMakeWithSeconds(1.0, 600);
+           CMTime duration = CMTimeMakeWithSeconds(3.0, 600);
+           CMTimeRange range = CMTimeRangeMake(start, duration);
+           exportSession.timeRange = range;
+
+           [exportSession exportAsynchronouslyWithCompletionHandler:^{
+        
+               switch ([exportSession status]) {
+                   case AVAssetExportSessionStatusFailed:
+                       NSLog(@"Export failed: %@", [[exportSession error] localizedDescription]);
+                       break;
+                   case AVAssetExportSessionStatusCancelled:
+                       NSLog(@"Export canceled");
+                       break;
+                   default:
+                       break;
+               }
+           }];
+        */
+        
+//        let url = Bundle.main.url(forResource: "test", withExtension: "mp4")//A URL that identifies an audiovisual asset such as a movie file
+//        let asset = AVURLAsset(url: url!, options: nil)
+//
+        
+//        NSURL *url = A URL that identifies an audiovisual asset such as a movie file;
+//        NSDictionary *options = @{ AVURLAssetPreferPreciseDurationAndTimingKey : @YES };
+//        AVURLAsset *anAssetToUseInAComposition = [[AVURLAsset alloc] initWithURL:url options:options];
+
+//        let url = Bundle.main.url(forResource: "test", withExtension: "mp4")//A URL that identifies an audiovisual asset such as a movie file;
+//        let theOpts: [String : Any] = [AVURLAssetPreferPreciseDurationAndTimingKey : true]
+//        let anAssetToUseInAComposition = AVURLAsset(url: url!, options: theOpts)
+        
+        
+        
+//        // URL of a bundle asset called 'example.mp4'
+//        let url = Bundle.main.url(forResource: "example", withExtension: "mp4")
+//        let asset = AVAsset(url: url!)
+//        let durationKey = "duration"
+//
+//        // Load the "playable" property
+//        asset.loadValuesAsynchronously(forKeys: [durationKey]) {
+//            var error: NSError? = nil
+//            let status = asset.statusOfValue(forKey: durationKey, error: &error)
+//            switch status {
+//            case .loaded:
+//                // Sucessfully loaded. Continue processing.
+//                break
+//            case .failed:
+//                // Handle error
+//                break
+//            case .cancelled:
+//                // Terminate processing
+//                break
+//            default:
+//                // Handle all other cases
+//                break
+//            }
+//        }
+        /*
+        let url = Bundle.main.url(forResource: "example", withExtension: "mp4")
+        let anAsset = AVAsset(url: url!)
+        let outputURL = "未完成"// URL of your exported output //
+         
+        // These settings will encode using H.264.
+        let preset = AVAssetExportPresetHighestQuality
+        let outFileType = AVFileTypeQuickTimeMovie
+
+        AVAssetExportSession.determineCompatibility(ofExportPreset: preset, with: anAsset, outputFileType: outFileType, completionHandler: { (isCompatible) in
+            if !isCompatible {
+                return
+        }})
+
+        guard let export = AVAssetExportSession(asset: anAsset, presetName: preset) else {
+            return
+        }
+
+        export.outputFileType = outFileType
+        export.outputURL = outputURL
+        export.exportAsynchronously { () -> Void in
+           // Handle export results.
+        }
+        */
+
+    }
     func setupAVPlayer() {
         player = AVPlayer()
     }
