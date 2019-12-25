@@ -8,7 +8,93 @@
 
 import Foundation
 import AVFoundation
+import Photos
+import UIKit
+import os
 class VideoManager {
+    
+    static func testExportByAVAssetExportSession() {
+        let saveVideoToPhotos: (_ outputURL: URL) -> Void  = {
+            (outputURL: URL) -> Void in
+            PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: outputURL)  }) {
+                    success, error in
+                    if success {
+                        os_log("Succesfully Saved", type: .debug)
+                    } else {
+                        os_log("Export failed: %@", type: .error,error?.localizedDescription ?? "error")
+                    }
+            }
+        }
+        let url = Bundle.main.url(forResource: "test", withExtension: "mp4")
+        let asset = AVAsset(url: url!)
+                
+        // Setup to use preferred background color
+        let prototypeInstruction = AVMutableVideoCompositionInstruction()
+        prototypeInstruction.backgroundColor = UIColor.red.cgColor
+        let videoComposition = AVMutableVideoComposition(propertiesOf: asset, prototypeInstruction: prototypeInstruction)
+        
+        //Set frame renderSize & frame duration
+        //        let videoComposition = AVMutableVideoComposition(propertiesOf: composition)
+        videoComposition.renderSize = CGSize(width: 400,height: 224)
+        videoComposition.sourceTrackIDForFrameTiming = kCMPersistentTrackID_Invalid;
+        videoComposition.frameDuration = CMTime(value: 1, timescale: 5)
+        
+        AVAssetExportSession.determineCompatibility(ofExportPreset: AVAssetExportPresetHighestQuality, with: asset, outputFileType: .mov) {
+            compatible in
+            if compatible {
+                guard let exportSession = AVAssetExportSession(asset: asset, presetName: AVAssetExportPresetHighestQuality) else {
+                    print("Failed to create export session to AVC")
+                    return
+                }
+                exportSession.videoComposition = videoComposition
+                exportSession.outputFileType = AVFileType.mov //AVFileTypeQuickTimeMovie
+                guard let documentDirectory = FileManager.default.urls(for: .documentDirectory,
+                                                                       in: .userDomainMask).first else {
+                                                                        return
+                }
+                let dateFormatter = DateFormatter()
+                dateFormatter.dateStyle = .long
+                dateFormatter.timeStyle = .short
+                let date = dateFormatter.string(from: Date())
+                let url = documentDirectory.appendingPathComponent("mergeVideo-\(date).mov")
+                exportSession.outputURL = url
+                //                let start: CMTime = CMTimeMakeWithSeconds(1.0, preferredTimescale: 600)
+                //                let duration: CMTime = CMTimeMakeWithSeconds(3.0, preferredTimescale: 600)
+                //                let range: CMTimeRange = CMTimeRangeMake(start: start, duration: duration)
+                //                exportSession.timeRange = range
+                exportSession.exportAsynchronously { () -> Void in
+                    // Handle export results.
+                    switch exportSession.status {
+                    case .completed:
+                        os_log("Export completed", type: .debug)
+                        // Ensure permission to access Photo Library
+                        if PHPhotoLibrary.authorizationStatus() != .authorized {
+                            PHPhotoLibrary.requestAuthorization({ status in
+                                if status == .authorized {
+                                    saveVideoToPhotos(exportSession.outputURL!)
+                                }
+                            })
+                        } else {
+                            saveVideoToPhotos(exportSession.outputURL!)
+                        }
+                        
+                    case .failed:
+                        os_log("Export failed: %@", type: .error, exportSession.error?.localizedDescription ?? "error")
+                        break
+                    case .cancelled:
+                        os_log("Export canceled", type: .debug)
+                        break
+                    default:
+                        break
+                    }
+                }
+            } else {
+                print("Export Session failed compatibility check")
+            }
+            
+        }
+    }
     
     static func getFPSUsingAsset(asset: AVURLAsset) {
         //Get FPS
